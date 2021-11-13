@@ -1,0 +1,201 @@
+---
+title: "Web Scraping 30 Rock Data"
+author: "Phillip Sanderell"
+date: "11/13/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load required packages
+
+```{r}
+library(tidyverse)
+library(rvest)
+library(here)
+```
+
+# Scrape raw data from IMDb
+
+There are seven seasons of 30 Rock.
+
+```{r}
+rock_raw <- tibble()
+
+for (s in 1:7) {
+  
+  season_link <- paste0("https://www.imdb.com/title/tt0496424/episodes?season=", s)
+  
+  season_page <- read_html(season_link)
+  
+  se_index <- 
+    season_page %>% 
+    html_elements(".zero-z-index div") %>% 
+    html_text(trim = TRUE)
+  
+  ep_name <- 
+    season_page %>% 
+    html_elements("#episodes_content strong a") %>% 
+    html_text(trim = TRUE)
+  
+  ep_link <- 
+    season_page %>% 
+    html_elements("#episodes_content strong a") %>% 
+    html_attr("href") %>% 
+    paste0("https://www.imdb.com", .)
+  
+  air_date <- 
+    season_page %>% 
+    html_elements(".airdate") %>% 
+    html_text(trim = TRUE)
+  
+  ep_desc <- 
+    season_page %>% 
+    html_elements(".item_description") %>% 
+    html_text(trim = TRUE)
+  
+  no_votes <- 
+    season_page %>% 
+    html_elements(".ipl-rating-star__total-votes") %>% 
+    html_text(trim = TRUE)
+  
+  rating <- 
+    season_page %>% 
+    html_elements(".ipl-rating-star.small .ipl-rating-star__rating") %>% 
+    html_text(trim = TRUE)
+  
+  rock_raw <- 
+    rbind(rock_raw, 
+          tibble(se_index, ep_name, ep_link, air_date, ep_desc, no_votes, rating))
+  
+  #It's always polite to sleep between accessing pages, even if not asked on the robots.txt
+  Sys.sleep(3 + runif(1, 1, 2))
+}
+```
+
+## Pull directors and writers for each episode---Try 1
+
+```{r}
+ep_link <- "https://www.imdb.com/title/tt1635816/?ref_=ttep_ep4"
+
+ep_page <- read_html(ep_link)
+
+writers <-
+  ep_page %>% 
+  html_elements("div.PrincipalCredits__PrincipalCreditsPanelWideScreen-hdn81t-0.iGxbgr > ul > li:nth-child(2) a") %>%
+  html_text %>% 
+  paste(collapse = "__")
+
+directors <- 
+  ep_page %>% 
+  html_elements("div.PrincipalCredits__PrincipalCreditsPanelWideScreen-hdn81t-0.iGxbgr > ul > li:nth-child(1) a") %>%
+  html_text %>% 
+  paste(collapse = "__")
+```
+
+The method above currently has some flaws:
+
+-   If an episode has more writers or directors than fit on the page, it does not display all of them.
+
+-   Tina Fey created the show, so she's listed on every episode as a writer even if she didn't really write the script. Sure I could collect her in every episode and then remove her but then I might remove her when she actually is the writer of the script.
+
+I've got a different idea I want to try for collecting writers and directors. It seems like each episode page has a cleaner, more detailed list of credits where writers as listed as (created by), (written by), (story editor), (executive story editor), etc. If I can get the link for each episode's, which there might be a pattern for that I can apply to the links I already have, then I could try looping through those pages to pull only the writers and directors I'm actually interested in.
+
+## Pull directors and writers for each episode---Try 2
+
+The chunk below gets links for each episode's credits page. This seems to work when I spot check some of the links.
+
+```{r}
+# The block below gets links for each episode's credits page
+credits <- 
+  rock_raw %>% 
+  mutate(ep_credit_link = str_extract(ep_link, ".+?\\?")) %>% 
+  mutate(ep_credit_link = str_replace(ep_credit_link, "\\?", "fullcredits?ref_=tt_ov_wr_sm")) %>% 
+  select(se_index, ep_credit_link)
+```
+
+![]()
+
+```{r}
+get_credits <- function(link) {
+
+  credit_page <- read_html(link)
+  
+  directors <-
+    credit_page %>% 
+    html_element("#director+ .simpleCreditsTable") %>% 
+    html_table() %>% 
+    # filter(grepl("(directed by)", X3)) %>% 
+    pull(X1) %>% 
+    paste(collapse = "__")
+  
+  writers <- 
+    credit_page %>% 
+    html_element("#writer+ .simpleCreditsTable") %>% 
+    html_table() %>% 
+    filter(grepl("(written by)", X3)) %>% 
+    pull(X1) %>% 
+    paste(collapse = "__")
+  
+  Sys.sleep(1 + runif(1, 1, 2))
+  
+  data.frame(directors = directors, writers = writers) %>% 
+    return()
+}
+
+# This cycles through all episodes, could take a while, ~6 minutes.
+dw <- sapply(credits$ep_credit_link, 
+             FUN = get_credits, 
+             USE.NAMES = FALSE)
+
+# Put dw output into a neat tibble.
+directors <- 
+  dw[1, ] %>% 
+  tibble(directors = .) %>% 
+  unnest(directors)
+
+writers <- 
+  dw[2, ] %>% 
+  tibble(writers = .) %>% 
+  unnest(writers)
+
+dw_credits <- 
+  credits %>%
+  cbind(directors, writers)
+```
+
+Nice! Looks like this method worked well.
+
+# Combining and cleaning the data
+
+Our original data set and credits data set need combined. Some variables need cleaned.
+
+```{r}
+rock <-
+  full_join(rock_raw, dw_credits, by = "se_index") %>% 
+  separate(se_index, into = c("season", "ep_no")) %>% 
+  mutate(season = parse_number(season),
+         ep_no = parse_number(ep_no)) %>% 
+  mutate(air_date = str_remove(air_date, "\\."),
+         air_date = parse_date(air_date, format = "%d %b %Y"),
+         no_votes = parse_number(no_votes),
+         rating = parse_number(rating))
+```
+
+Check the data for missing values.
+
+```{r}
+rock %>% View
+```
+
+From a quick glance, looks pretty good.
+
+# Export data
+
+I considered exporting the data as a .Rds because I would like to make sure R saved the variable classes for when I import the data in a clean session, but then it wouldn't be accessible if someone wanted to import it into, for example, Excel or Python, later. So I decided to just export as .csv and hope the clean format of the dates and numbers help R default to the write classes, if they don't, oh well.
+
+```{r}
+write_csv(rock, here("rock.csv"))
+```
