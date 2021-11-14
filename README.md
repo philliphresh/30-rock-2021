@@ -2,13 +2,40 @@ Analyzing 30 Rock Data
 ================
 Phillip Sanderell
 
-# Import data
+“Science is my most favorite subject, especially the Old Testament.”
+Continuing my one-show streak of analyzing data for my favorite
+television shows, I have chosen to explore Tina Fey’s *30 Rock*. In this
+post I look forward to learning about what it takes to make a truly
+fantastic show, and perhaps impress my friends from The Second City.
 
-# Exploring distributions of variables
+# Exploring episode metadata
 
 ## IMDb rating
 
+IMDb ratings tend to be my go-to metric for scoring episodes, and
+something that I find particularly interesting. I suppose I assume that
+episodes with higher IMDb ratings had higher Neilsen ratings or
+generated more audience for the show. The plot below shows the
+distribution of IMDb ratings for every regular-season episode of the
+show.
+
 ![](README_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+
+The ratings do seem to have an approximately normal distribution
+centered at eight stars. Something worth noting is that while IMDb
+ratings range from 0 to 10, I find episode ratings for various shows
+hover around 8 starts–perhaps there is some psychological reason for
+that, but unfortunately we have no way of knowing, medicine is not a
+science.
+
+The plot above is useful for examining episode ratings overall, but it
+is easy to tell if certain seasons rate better than others. The next
+plot was made in an effort to make this more clear. Each dot represents
+an episode going in order of air date from left to right, colored by
+season, and sized by number of IMDb votes. The “notched” box plots show
+the 25th, 50th, and 75th percentiles of ratings for each season–if the
+notches in different season’s boxes don’t overlap, it suggests the
+medians are significantly different.
 
 ![](README_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 

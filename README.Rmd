@@ -4,6 +4,8 @@ author: "Phillip Sanderell"
 output: github_document
 ---
 
+"Science is my most favorite subject, especially the Old Testament." Continuing my one-show streak of analyzing data for my favorite television shows, I have chosen to explore Tina Fey's *30 Rock*. In this post I look forward to learning about what it takes to make a truly fantastic show, and perhaps impress my friends from The Second City.
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
@@ -21,15 +23,15 @@ light_theme <-
 theme_set(light_theme)
 ```
 
-# Import data
-
 ```{r include=FALSE}
 rock <- read_csv("https://raw.githubusercontent.com/philliphresh/30-rock-2021/main/rock.csv")
 ```
 
-# Exploring distributions of variables
+# Exploring episode metadata
 
 ## IMDb rating
+
+IMDb ratings tend to be my go-to metric for scoring episodes, and something that I find particularly interesting. I suppose I assume that episodes with higher IMDb ratings had higher Neilsen ratings or generated more audience for the show. The plot below shows the distribution of IMDb ratings for every regular-season episode of the show.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, dpi=600}
 nbc_pallete <- c(`1` = "#FCB711",
@@ -54,11 +56,25 @@ rock %>%
        caption = "\nData from IMDb.com  |  @PhilliPhresh")
 ```
 
+The ratings do seem to have an approximately normal distribution centered at eight stars. Something worth noting is that while IMDb ratings range from 0 to 10, I find episode ratings for various shows hover around 8 starts--perhaps there is some psychological reason for that, but unfortunately we have no way of knowing, medicine is not a science.
+
+The plot above is useful for examining episode ratings overall, but it is easy to tell if certain seasons rate better than others. The next plot was made in an effort to make this more clear. Each dot represents an episode going in order of air date from left to right, colored by season, and sized by number of IMDb votes. The "notched" box plots show the 25th, 50th, and 75th percentiles of ratings for each season--if the notches in different season's boxes don't overlap, it suggests the medians are significantly different.
+
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, dpi=600}
 season_labels <- c("Season 1", "2", "3", "4", "5", "6", "7")
 names(season_labels) <- 1:7
 
+ann_1 <- tibble(season = 1, ep_no = 7, rating = 7.3, hjust = 0,
+                label = "Pilot")
+ann_2 <- tibble(season = 1, ep_no = 3, rating = 7.4, hjust = 0, 
+                label = "Unaired Pilot")
+ann_3 <- tibble(season = 6, ep_no = 16, rating = 7.3, hjust = 1, 
+                label = "Queen of Jordan 2: The Mystery\nof the Phantom Pooper")
+ann_4 <- tibble(season = 7, ep_no = 10, rating = 9.0, hjust = 1, 
+                label = "Hogcock!/Last Lunch")
+
 rock %>% 
+  # arrange(-rating)
   mutate(season = fct_reorder(as.character(season), air_date)) %>% 
   
   ggplot(aes(ep_no, rating)) +
@@ -69,6 +85,10 @@ rock %>%
   facet_grid(cols = vars(season), 
              scales = "free_x", 
              labeller = labeller(season = season_labels)) +
+  geom_text(aes(label = label, hjust = hjust), data = ann_1) +
+  geom_text(aes(label = label, hjust = hjust), data = ann_2) +
+  geom_text(aes(label = label, hjust = hjust), data = ann_3, lineheight = .7) +
+  geom_text(aes(label = label, hjust = hjust), data = ann_4) +
   scale_color_manual(values = nbc_pallete) +
   scale_fill_manual(values = nbc_pallete) +
   guides(size = "none", color = "none", fill = "none") +
