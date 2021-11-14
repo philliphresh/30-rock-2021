@@ -83,3 +83,18 @@ name as the composer for the series (or as Tina Fey’s husband in real
 life). I notice Robert Carlock, the second-most credited writer,
 directed an episode in the final season—I wonder if there is any other
 writer/director overlap.
+
+## Examining characters listed in episode description
+
+Can we find any relationships with character names?
+
+### A little more web scraping needs performed to gather a list of character names
+
+Looks good.
+
+### Plotting character prevalence
+
+Now that we have the top 50 character names, we can search for them in
+the episode descriptions.
+
+![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->

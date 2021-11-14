@@ -181,3 +181,84 @@ rock %>%
 ```
 
 I wonder what happened to Adam Bernstein? He directed just as much as Don Scardino in season one and then didn't direct anymore. Jeff Richmond directed a number of later episodes, avid watchers may recognize his name as the composer for the series (or as Tina Fey's husband in real life). I notice Robert Carlock, the second-most credited writer, directed an episode in the final season---I wonder if there is any other writer/director overlap.
+
+## Examining characters listed in episode description
+
+Can we find any relationships with character names?
+
+### A little more web scraping needs performed to gather a list of character names
+
+```{r, include=FALSE}
+library(rvest)
+
+full_credits_link <- "https://www.imdb.com/title/tt0496424/fullcredits/?ref_=tt_cl_sm"
+
+full_credits_page <- read_html(full_credits_link)
+
+full_credits <- 
+  full_credits_page %>% 
+  html_elements(".character a:nth-child(1) , .character a:nth-child(1) font") %>% 
+  html_text(trim = TRUE) %>% 
+  # Limit ot top 50 characters
+  .[1:50] %>% 
+  tibble(full_name = .) %>% 
+  mutate(first_name = word(full_name, 1)) %>% 
+  # Fix some of the tricky names
+  mutate(first_name = case_when(full_name == "Dot Com" ~ "Dot Com",
+                                full_name == "J.D. Lutz" ~ "Lutz",
+                                full_name == "Dr. Leo Spaceman" ~ "Dr. Spaceman",
+                                full_name == "Stage Manager" ~ "Stage Manager",
+                                full_name == "Young Liz" ~ "Young Liz",
+                                full_name == "Dr. Drew Baird" ~ "Dr. Baird",
+                                full_name == "Old Janitor" ~ "Old Janitor",
+                                TRUE ~ first_name))
+
+# Just making sure there are no repeats
+full_credits %>% 
+  count(first_name)
+```
+
+Looks good.
+
+### Plotting character prevalence
+
+Now that we have the top 50 character names, we can search for them in the episode descriptions.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=6, dpi=600}
+# Try a loop, maybe?
+characters <- rock
+for (i in full_credits$first_name) {
+  characters <- 
+    characters %>% 
+    mutate(str_detect(ep_desc, i)) %>% 
+    rename(!!enquo(i) := `str_detect(ep_desc, i)`)
+}
+
+characters %>% 
+  pivot_longer(Liz:Lester, 
+               names_to = "character", 
+               values_to = "in_episode_desc") %>% 
+  filter(in_episode_desc == TRUE) %>% 
+  group_by(character) %>% 
+  mutate(n = n()) %>% 
+  slice_max(n, n = 20) %>% 
+  summarise(n = mean(n),
+            p25 = quantile(rating, .25),
+            p50 = quantile(rating, .50),
+            p75 = quantile(rating, .75)) %>% 
+  mutate(character = fct_reorder(character, n)) %>% 
+  mutate(character = fct_reorder(character, p50)) %>%
+  
+  ggplot(aes(y = character)) +
+  geom_point(aes(x = p50, size = n)) +
+  geom_errorbar(aes(xmin = p25, xmax = p75)) +
+  gghighlight::gghighlight(character %in% c("Jack", "Liz", "Tracy", "Jenna", "Kenneth"), 
+                           use_direct_label = FALSE,
+                           unhighlighted_params = aes(color = "grey50")) +
+  guides(size = "none") +
+  coord_cartesian(xlim = c(7.4, 8.4)) +
+  labs(x = "Episode Ratings",
+       y = "Characters",
+       title = "The five main characters do not seem to have different distributions of\nepisode ratings",
+       caption = "\nData from IMDb.com  |  @PhilliPhresh")
+```
