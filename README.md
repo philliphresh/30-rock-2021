@@ -39,9 +39,19 @@ medians are significantly different.
 
 ![](README_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
+Based on the notched box plots, season six had a significantly lower
+median rating than seasons two and three–perhaps that explains why
+season seven is the last with only 12 episodes. NBC is quick to cancel
+non-cop shows when they’re not doing well.
+
 ## Prevalence of writers
 
-I would like to see a plot of most common writers by season.
+The plot below lists every writer of the show in order of total episodes
+written for the series. Please note, on the full cast and crew page for
+each episode, IMDb lists some people in the writing credits section as
+‘story editor’, ‘executive story editor’, etc., and it always lists Tina
+Fey as ‘created by’. The counts in the plot below only capture a writer
+if they are listed as ‘written by’.
 
 ![](README_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
