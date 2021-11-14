@@ -1,0 +1,82 @@
+---
+title: "Analyzing 30 Rock Data"
+author: "Phillip Sanderell"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(showtext)
+showtext_auto()
+font_add("Monsterrat", "Montserrat-Regular.ttf")
+yellow <- "#FFFFAC"
+light_theme <- 
+  theme_minimal() +
+  theme(text = element_text(family = "Monsterrat", color = "black"),
+        plot.title = element_text(size = 15),
+        axis.text = element_text(color = "black", size = 10),
+        axis.title = element_text(color = "black", size = 12),
+        plot.title.position = "plot")
+theme_set(light_theme)
+```
+
+# Import data
+
+```{r include=FALSE}
+rock <- read_csv("https://raw.githubusercontent.com/philliphresh/30-rock-2021/main/rock.csv")
+```
+
+# Exploring distributions of variables
+
+## IMDb rating
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, dpi=600}
+nbc_pallete <- c(`1` = "#FCB711",
+                 `2` = "#F37021",
+                 `3` = "#CC004C",
+                 `4` = "#6460AA",
+                 `5` = "#0089D0",
+                 `6` = "#0DB14B",
+                 `7` = "black")
+
+rock %>% 
+  mutate(season = as.character(season)) %>% 
+  ggplot(aes(rating, fill = season)) +
+  geom_histogram(binwidth = .1) +
+  scale_fill_manual(values = nbc_pallete,
+                    name = "Season") +
+  theme(panel.grid.minor.y = element_blank(),
+        plot.caption.position = "plot") +
+  labs(title = "30 ROCK's IMDb ratings generally range between 7.5 and 8.6",
+       x = "Episode Rating",
+       y = "Count",
+       caption = "\nData from IMDb.com  |  @PhilliPhresh")
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, dpi=600}
+season_labels <- c("Season 1", "2", "3", "4", "5", "6", "7")
+names(season_labels) <- 1:7
+
+rock %>% 
+  mutate(season = fct_reorder(as.character(season), air_date)) %>% 
+  ggplot(aes(ep_no, rating)) +
+  geom_point(aes(size = no_votes, color = season)) + 
+  geom_boxplot(aes(y = rating), color = "black",
+               size = 1, alpha = .2, notch = TRUE, 
+               coef = 0, outlier.color = NA) +
+  facet_grid(cols = vars(season), 
+             scales = "free_x", switch = "x",
+             labeller = labeller(season = season_labels)) +
+  scale_color_manual(values = nbc_pallete) +
+  scale_fill_manual(values = nbc_pallete) +
+  guides(size = "none", color = "none", fill = "none") +
+  coord_cartesian(clip = 'off') +
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank()) +
+  labs(title = "The distribution of ratings gets more variable over time",
+       y = "Episode Rating",
+       caption = "\nData from IMDb.com  |  @PhilliPhresh")
+```
