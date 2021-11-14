@@ -31,7 +31,7 @@ rock <- read_csv("https://raw.githubusercontent.com/philliphresh/30-rock-2021/ma
 
 ## IMDb rating
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, dpi=600}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, dpi=600}
 nbc_pallete <- c(`1` = "#FCB711",
                  `2` = "#F37021",
                  `3` = "#CC004C",
@@ -54,19 +54,20 @@ rock %>%
        caption = "\nData from IMDb.com  |  @PhilliPhresh")
 ```
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, dpi=600}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, dpi=600}
 season_labels <- c("Season 1", "2", "3", "4", "5", "6", "7")
 names(season_labels) <- 1:7
 
 rock %>% 
   mutate(season = fct_reorder(as.character(season), air_date)) %>% 
+  
   ggplot(aes(ep_no, rating)) +
   geom_point(aes(size = no_votes, color = season)) + 
   geom_boxplot(aes(y = rating), color = "black",
                size = 1, alpha = .2, notch = TRUE, 
                coef = 0, outlier.color = NA) +
   facet_grid(cols = vars(season), 
-             scales = "free_x", switch = "x",
+             scales = "free_x", 
              labeller = labeller(season = season_labels)) +
   scale_color_manual(values = nbc_pallete) +
   scale_fill_manual(values = nbc_pallete) +
@@ -75,8 +76,76 @@ rock %>%
   theme(panel.grid.minor = element_blank(),
         panel.grid.major.x = element_blank(),
         axis.title.x = element_blank(),
-        axis.text.x = element_blank()) +
+        axis.text.x = element_blank(),
+        strip.text = element_text(size = 10)) +
   labs(title = "The distribution of ratings gets more variable over time",
        y = "Episode Rating",
        caption = "\nData from IMDb.com  |  @PhilliPhresh")
 ```
+
+## Prevalence of writers
+
+I would like to see a plot of most common writers by season.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=7, dpi=600}
+rock %>% 
+  separate(writers, paste0("writer_", 1:4), sep = "\\_\\_") %>% 
+  pivot_longer(writer_1:writer_4, names_to = NULL, values_to = "writer") %>% 
+  filter(!is.na(writer)) %>% 
+  group_by(writer) %>% 
+  mutate(tot_eps = n()) %>% 
+  group_by(season, writer) %>% 
+  summarise(n = n(),
+            tot_eps = mean(tot_eps)) %>% 
+  ungroup() %>% 
+  mutate(writer = fct_reorder(writer, tot_eps)) %>% 
+  
+  ggplot(aes(n, writer, fill = as.character(season))) + 
+  geom_col() + 
+  facet_grid(cols = vars(season),
+             labeller = labeller(season = season_labels)) +
+  scale_fill_manual(values = nbc_pallete) +
+  scale_x_continuous(breaks = seq(1, 9, 2)) +
+  guides(fill = "none") +
+  theme(panel.grid.minor = element_blank(),
+        axis.title.y = element_blank()) +
+  labs(title = "There seem to be three tiers of writers:",
+       subtitle = "    A.    Original writing team\n    B.    New writers brought on in season four\n    C.    Various guest writers",
+       x = "Number of episodes written",
+       caption = "\nData from IMDb.com  |  @PhilliPhresh")
+```
+
+Tina Fey clearly did not sleep, having had the highest number of episodes written (or tied for) in five out of seven seasons, all while staring in every episode. Robert Carlock wrote the second most total episodes for the show, which is fortunate because I love his writing style-quick, ridiculous, and too witty to keep up with sometimes. Tina Fey and Robert Carlock went on to co-create *The Unbreakable Kimmy Schmidt*, which would be another interesting show to analyze, bringing along a lot of 30 Rock writing alumna. Tracy Wigfield created the NBC series *Great News*, another great watch. I believe Donald Glover is credited as a story consultant writer on some episodes that do not show up here, but looks like he worked on the actual script for two episodes.
+
+## Prevalence of directors
+
+I would like to see a similar plot of most common directors by season.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=7, dpi=600}
+rock %>% 
+  separate(directors, paste0("director_", 1:4), sep = "\\_\\_") %>% 
+  pivot_longer(director_1:director_4, names_to = NULL, values_to = "director") %>% 
+  filter(!is.na(director)) %>% 
+  group_by(director) %>% 
+  mutate(tot_eps = n()) %>% 
+  group_by(season, director) %>% 
+  summarise(n = n(),
+            tot_eps = mean(tot_eps)) %>% 
+  ungroup() %>% 
+  mutate(director = fct_reorder(director, tot_eps)) %>% 
+  
+  ggplot(aes(n, director, fill = as.character(season))) + 
+  geom_col() + 
+  facet_grid(cols = vars(season),
+             labeller = labeller(season = season_labels)) +
+  scale_fill_manual(values = nbc_pallete) +
+  scale_x_continuous(breaks = seq(1, 9, 2)) +
+  guides(fill = "none") +
+  theme(panel.grid.minor = element_blank(),
+        axis.title.y = element_blank()) +
+  labs(title = "The top four directors dominate, others seem to come when available",
+       x = "Number of episodes directed",
+       caption = "\nData from IMDb.com  |  @PhilliPhresh")
+```
+
+I wonder what happened to Adam Bernstein? He directed just as much as Don Scardino in season one and then didn't direct anymore. Jeff Richmond directed a number of later episodes, avid watchers may recognize his name as the composer for the series (or as Tina Fey's husband in real life). I notice Robert Carlock, the second-most credited writer, directed an episode in the final season--I wonder if there is any other writer/director overlap.
