@@ -68,13 +68,56 @@ series *Great News*, another great watch. I believe Donald Glover is
 credited as a story consultant writer on some episodes that do not show
 up here, but looks like he worked on the actual script for two episodes.
 
+### Did bringing on more writers cause the ratings downfall?
+
+It’s a leading question, I know, but it is curious to see that 30 Rock’s
+ratings started going downhill in season four and that happens to also
+be the season that the main writing staff added about four new writers.
+
+I think a way to answer this question simply is to compare the
+distribution of ratings in the fourth through seventh seasons between
+the original writing team and the new writers (excluding guest writers).
+If they have similar distributions we cannot make any conclusions about
+the new writers, if the new writers have lower ratings then we can
+reasonably assume they did not do the show any favors.
+
+For the purposes of this question, the original writing team is:
+
+-   Tina Fey
+
+-   Robert Carlock
+
+-   Jack Burditt
+
+-   Matt Hubbard
+
+-   Kay Cannon
+
+-   Ron Weiner
+
+-   John Riggi
+
+The new writers are:
+
+-   Tracey Wigfield
+
+-   Josh Siegal
+
+-   Dylan Morgan
+
+-   Vali Chandrasekaran
+
+-   Tom Ceraulo
+
+![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+
 ## Prevalence of directors
 
 The plot below lists every director of the show in order of total
 episodes directed for the series. The median IMDb rating for each
 director’s episodes is listed beside their name.
 
-![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 I wonder what happened to Adam Bernstein? He directed just as much as
 Don Scardino in season one and then didn’t direct anymore. Jeff Richmond
@@ -86,15 +129,29 @@ writer/director overlap.
 
 ## Examining characters listed in episode description
 
-Can we find any relationships with character names?
+Can we find any relationships with character names and IMDb ratings?
 
 ### A little more web scraping needs performed to gather a list of character names
 
-Looks good.
+View the README.Rmd file in this Github repo to see the extra web
+scraping code to gather character names.
 
-### Plotting character prevalence
+### Plotting character rating prevalence
 
-Now that we have the top 50 character names, we can search for them in
-the episode descriptions.
+I’m interested in seeing if certain characters being the main focus of
+an episode drives the IMDb rating up or down. Unfortunately a large
+assumption needs to be made: characters being the main focus of an
+episode are listed in the episode description on IMDb. Of course I’m
+sure this assumption is not perfect, there are certainly episode
+descriptions that don’t mention characters with prominent story lines in
+the episode.
 
-![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+The plot below shows the top 30 or so characters listed in episode
+descriptions, with their 25th, 50th, and 75th percentiles of episode
+ratings given on the left bar, dot, and right bar of each row. The
+larger the dot, the more episodes with that character mentioned in the
+description—the top 5 characters are highlighted.
+
+![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+I’m not surprised Dr. Spaceman is stably near the top of the list.
