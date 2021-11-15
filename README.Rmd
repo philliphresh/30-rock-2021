@@ -184,7 +184,7 @@ I wonder what happened to Adam Bernstein? He directed just as much as Don Scardi
 
 ## Examining characters listed in episode description
 
-Can we find any relationships with character names?
+Can we find any relationships with character names and IMDb ratings?
 
 ### A little more web scraping needs performed to gather a list of character names
 
@@ -195,6 +195,7 @@ full_credits_link <- "https://www.imdb.com/title/tt0496424/fullcredits/?ref_=tt_
 
 full_credits_page <- read_html(full_credits_link)
 
+# Get list of character names
 full_credits <- 
   full_credits_page %>% 
   html_elements(".character a:nth-child(1) , .character a:nth-child(1) font") %>% 
@@ -218,14 +219,14 @@ full_credits %>%
   count(first_name)
 ```
 
-Looks good.
+View the README.Rmd file in this Github repo to see the extra web scraping code to gather character names.
 
-### Plotting character prevalence
+### Plotting character rating prevalence
 
-Now that we have the top 50 character names, we can search for them in the episode descriptions.
+I'm interested in seeing if certain characters being the main focus of an episode drives the IMDb rating up or down. Unfortunately a large assumption needs to be made: characters being the main focus of an episode are listed in the episode description on IMDb. Of course I'm sure this assumption is not perfect, there are certainly episode descriptions that don't mention characters with prominent story lines in the episode.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=6, dpi=600}
-# Try a loop, maybe?
+```{iptions.{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=6, dpi=600}
+# Cross reference character names with episode desriptions
 characters <- rock
 for (i in full_credits$first_name) {
   characters <- 
@@ -255,6 +256,17 @@ characters %>%
   gghighlight::gghighlight(character %in% c("Jack", "Liz", "Tracy", "Jenna", "Kenneth"), 
                            use_direct_label = FALSE,
                            unhighlighted_params = aes(color = "grey50")) +
+  
+  annotate("text", 7.47, 3.5, hjust = 1, 
+           label = "25th") +
+  geom_curve(aes(x = 7.46, y = 3, xend = 7.49, yend = "Hazel"), arrow = arrow(length = unit(0.01, "npc"))) +
+  annotate("text", 7.6, 3.5, hjust = .5, 
+           label = "50th") +
+  geom_curve(aes(x = 7.6, y = 3, xend = 7.6, yend = 2.3), arrow = arrow(length = unit(0.01, "npc")), curvature = 0) +
+    annotate("text", 7.99, 3.5, hjust = 0, 
+           label = "75th Percentile") +
+  geom_curve(aes(x = 8, y = 3, xend = 7.905, yend = "Hazel"), arrow = arrow(length = unit(0.01, "npc")), curvature = -.2) +
+  
   guides(size = "none") +
   coord_cartesian(xlim = c(7.4, 8.4)) +
   labs(x = "Episode Ratings",
