@@ -33,7 +33,7 @@ rock <- read_csv("https://raw.githubusercontent.com/philliphresh/30-rock-2021/ma
 
 IMDb ratings tend to be my go-to metric for scoring episodes, and something that I find particularly interesting. I suppose I assume that episodes with higher IMDb ratings had higher Neilsen ratings or generated more audience for the show. The plot below shows the distribution of IMDb ratings for every regular-season episode of the show.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, dpi=600}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, dpi=900}
 nbc_pallete <- c(`1` = "#FCB711",
                  `2` = "#F37021",
                  `3` = "#CC004C",
@@ -60,7 +60,7 @@ The ratings do seem to have an approximately normal distribution centered at eig
 
 The plot above is useful for examining episode ratings overall, but it is easy to tell if certain seasons rate better than others. The next plot was made in an effort to make this more clear. Each dot represents an episode going in order of air date from left to right, colored by season, and sized by number of IMDb votes. The "notched" box plots show the 25th, 50th, and 75th percentiles of ratings for each season---if the notches in different season's boxes don't overlap, it suggests the medians are significantly different.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, dpi=600}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, dpi=900}
 season_labels <- c("Season 1", "2", "3", "4", "5", "6", "7")
 names(season_labels) <- 1:7
 
@@ -110,7 +110,7 @@ Based on the notched box plots, season six had a significantly lower median rati
 
 The plot below lists every writer of the show in order of total episodes written for the series. The median IMDb rating for each writer's episodes is listed beside their name. Please note, on the full cast and crew page for each episode, IMDb lists some people in the writing credits section as 'story editor', 'executive story editor', etc., and it always lists Tina Fey as 'created by'. The counts in the plot below only capture a writer if they are listed as 'written by'.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=7, dpi=600}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=7, dpi=900}
 rock %>% 
   separate(writers, paste0("writer_", 1:4), sep = "\\_\\_") %>% 
   pivot_longer(writer_1:writer_4, names_to = NULL, values_to = "writer") %>% 
@@ -180,7 +180,7 @@ The new writers are:
 
 -   Tom Ceraulo
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, dpi=600}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, dpi=900}
 rock %>% 
   separate(writers, paste0("writer_", 1:4), sep = "\\_\\_") %>% 
   pivot_longer(writer_1:writer_4, names_to = NULL, values_to = "writer") %>% 
@@ -227,7 +227,7 @@ rock %>%
 
 The plot below lists every director of the show in order of total episodes directed for the series. The median IMDb rating for each director's episodes is listed beside their name.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=7, dpi=600}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=7, dpi=900}
 rock %>% 
   separate(directors, paste0("director_", 1:4), sep = "\\_\\_") %>% 
   pivot_longer(director_1:director_4, names_to = NULL, values_to = "director") %>% 
@@ -307,7 +307,7 @@ I'm interested in seeing if certain characters being the main focus of an episod
 
 The plot below shows the top 30 or so characters listed in episode descriptions, with their 25th, 50th, and 75th percentiles of episode ratings given on the left bar, dot, and right bar of each row. The larger the dot, the more episodes with that character mentioned in the description---the top 5 characters are highlighted.
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=6, dpi=600}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=6, dpi=900}
 # Cross reference character names with episode descriptions
 characters <- rock
 for (i in full_credits$first_name) {
