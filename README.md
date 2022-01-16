@@ -13,9 +13,7 @@ fantastic show, and perhaps impress my friends from The Second City.
 ## IMDb rating
 
 IMDb ratings tend to be my go-to metric for scoring episodes, and
-something that I find particularly interesting. I suppose I assume that
-episodes with higher IMDb ratings had higher Neilsen ratings or
-generated more audience for the show. The plot below shows the
+something that I find particularly interesting. The plot below shows the
 distribution of IMDb ratings for every regular-season episode of the
 show.
 
@@ -62,7 +60,7 @@ staring in every episode. Robert Carlock wrote the second most total
 episodes for the show, which is fortunate because I love his writing
 style: quick, ridiculous, and too witty to keep up with sometimes. Tina
 Fey and Robert Carlock went on to co-create *The Unbreakable Kimmy
-Schmidt*, which would be another interesting show to analyze, bringing
+Schmidt* (which would be another interesting show to analyze) bringing
 along a lot of 30 Rock writing alumna. Tracy Wigfield created the NBC
 series *Great News*, another great watch. I believe Donald Glover is
 credited as a story consultant writer on some episodes that do not show
@@ -81,7 +79,8 @@ If they have similar distributions we cannot make any conclusions about
 the new writers, if the new writers have lower ratings then we can
 reasonably assume they did not do the show any favors.
 
-For the purposes of this question, the original writing team is:
+For the purposes of this question, I define the original writing team
+as:
 
 -   Tina Fey
 
@@ -111,11 +110,20 @@ The new writers are:
 
 ![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
+From season four and on, the episodes written by the new writers had
+lower median IMDb ratings than the original writing team. This evidence
+gives some merit to my hypothesis but with only 137 aired episodes, I
+don’t think there is enough data to be certain the new writers are all
+worse. If every writer wrote many more episodes, perhaps we could look
+at each writer’s episode ratings individually—there could be some
+original writing team members that produce consistently lower ratings
+and some new writers that produce consistently higher ratings.
+
 ## Prevalence of directors
 
 The plot below lists every director of the show in order of total
-episodes directed for the series. The median IMDb rating for each
-director’s episodes is listed beside their name.
+episodes directed for the series. The median IMDb rating for episodes
+directed by each person is listed beside their name.
 
 ![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
@@ -127,16 +135,19 @@ life). I notice Robert Carlock, the second-most credited writer,
 directed an episode in the final season—I wonder if there is any other
 writer/director overlap.
 
-## Examining characters listed in episode description
+# Examining characters listed in episode description
 
-Can we find any relationships with character names and IMDb ratings?
+Do episodes with Cerie in the spotlight score higher than those with
+Frank? Can we find any relationship with character names and IMDb
+ratings?
 
-### A little more web scraping needs performed to gather a list of character names
+## A little more web scraping needs performed to gather a list of character names
 
-View the README.Rmd file in this Github repo to see the extra web
-scraping code to gather character names.
+This Github repo includes the original Web Scraping code used to gather
+this data. You can view the README.Rmd file in this repo to see the
+extra web scraping code used to gather character names.
 
-### Plotting character rating prevalence
+## Plotting character rating prevalence
 
 I’m interested in seeing if certain characters being the main focus of
 an episode drives the IMDb rating up or down. Unfortunately a large
@@ -154,4 +165,26 @@ description—the top 5 characters are highlighted.
 
 ![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
-I’m not surprised Dr. Spaceman is stably near the top of the list.
+I’m not surprised Dr. Spaceman is stably near the top of the list. Of
+the main characters there doesn’t seem to be a difference in the
+distribution of episode ratings. However, I do notice annecdotally that
+a lot of episodes with characters often associated with Jack (romantic
+partners or business associates) outpace characters associated with Liz
+(mostly romantic partners).
+
+| Characters associated with Jack | Characters associated with Liz |
+|---------------------------------|--------------------------------|
+| Hank                            | Dr. Baird                      |
+| Elisa                           | Floyd                          |
+| Nancy                           | Criss                          |
+| Avery                           | Dennis                         |
+| Devon                           |                                |
+| Don                             |                                |
+
+# Conclusion
+
+This analysis has opened my eyes to the dichotomy of ratings between
+seasons and the potential factors driving those. I’ve gained a new
+appreciation for episodes written by Tina Fey and ones including
+characters focusing on Jack. If you’re a fellow fan of 30 Rock, feel
+free to reach out—I’d love to chat!

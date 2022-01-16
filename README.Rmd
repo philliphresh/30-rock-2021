@@ -31,7 +31,7 @@ rock <- read_csv("https://raw.githubusercontent.com/philliphresh/30-rock-2021/ma
 
 ## IMDb rating
 
-IMDb ratings tend to be my go-to metric for scoring episodes, and something that I find particularly interesting. I suppose I assume that episodes with higher IMDb ratings had higher Neilsen ratings or generated more audience for the show. The plot below shows the distribution of IMDb ratings for every regular-season episode of the show.
+IMDb ratings tend to be my go-to metric for scoring episodes, and something that I find particularly interesting. The plot below shows the distribution of IMDb ratings for every regular-season episode of the show.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, dpi=900}
 nbc_pallete <- c(`1` = "#FCB711",
@@ -144,7 +144,7 @@ rock %>%
        caption = "\nData from IMDb.com  |  @PhilliPhresh")
 ```
 
-Tina Fey clearly did not sleep, having had the highest number of episodes written (or tied for) in five out of seven seasons, all while staring in every episode. Robert Carlock wrote the second most total episodes for the show, which is fortunate because I love his writing style: quick, ridiculous, and too witty to keep up with sometimes. Tina Fey and Robert Carlock went on to co-create *The Unbreakable Kimmy Schmidt*, which would be another interesting show to analyze, bringing along a lot of 30 Rock writing alumna. Tracy Wigfield created the NBC series *Great News*, another great watch. I believe Donald Glover is credited as a story consultant writer on some episodes that do not show up here, but looks like he worked on the actual script for two episodes.
+Tina Fey clearly did not sleep, having had the highest number of episodes written (or tied for) in five out of seven seasons, all while staring in every episode. Robert Carlock wrote the second most total episodes for the show, which is fortunate because I love his writing style: quick, ridiculous, and too witty to keep up with sometimes. Tina Fey and Robert Carlock went on to co-create *The Unbreakable Kimmy Schmidt* (which would be another interesting show to analyze) bringing along a lot of 30 Rock writing alumna. Tracy Wigfield created the NBC series *Great News*, another great watch. I believe Donald Glover is credited as a story consultant writer on some episodes that do not show up here, but looks like he worked on the actual script for two episodes.
 
 ### Did bringing on more writers cause the ratings downfall?
 
@@ -152,7 +152,7 @@ It's a leading question, I know, but it is curious to see that 30 Rock's ratings
 
 I think a way to answer this question simply is to compare the distribution of ratings in the fourth through seventh seasons between the original writing team and the new writers (excluding guest writers). If they have similar distributions we cannot make any conclusions about the new writers, if the new writers have lower ratings then we can reasonably assume they did not do the show any favors.
 
-For the purposes of this question, the original writing team is:
+For the purposes of this question, I define the original writing team as:
 
 -   Tina Fey
 
@@ -223,9 +223,11 @@ rock %>%
        caption = "\nData from IMDb.com  |  @PhilliPhresh")
 ```
 
+From season four and on, the episodes written by the new writers had lower median IMDb ratings than the original writing team. This evidence gives some merit to my hypothesis but with only 137 aired episodes, I don't think there is enough data to be certain the new writers are all worse. If every writer wrote many more episodes, perhaps we could look at each writer's episode ratings individually---there could be some original writing team members that produce consistently lower ratings and some new writers that produce consistently higher ratings.
+
 ## Prevalence of directors
 
-The plot below lists every director of the show in order of total episodes directed for the series. The median IMDb rating for each director's episodes is listed beside their name.
+The plot below lists every director of the show in order of total episodes directed for the series. The median IMDb rating for episodes directed by each person is listed beside their name.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=7, dpi=900}
 rock %>% 
@@ -262,11 +264,11 @@ rock %>%
 
 I wonder what happened to Adam Bernstein? He directed just as much as Don Scardino in season one and then didn't direct anymore. Jeff Richmond directed a number of later episodes, avid watchers may recognize his name as the composer for the series (or as Tina Fey's husband in real life). I notice Robert Carlock, the second-most credited writer, directed an episode in the final season---I wonder if there is any other writer/director overlap.
 
-## Examining characters listed in episode description
+# Examining characters listed in episode description
 
-Can we find any relationships with character names and IMDb ratings?
+Do episodes with Cerie in the spotlight score higher than those with Frank? Can we find any relationship with character names and IMDb ratings?
 
-### A little more web scraping needs performed to gather a list of character names
+## A little more web scraping needs performed to gather a list of character names
 
 ```{r, include=FALSE}
 library(rvest)
@@ -299,9 +301,9 @@ full_credits %>%
   count(first_name)
 ```
 
-View the README.Rmd file in this Github repo to see the extra web scraping code to gather character names.
+This Github repo includes the original Web Scraping code used to gather this data. You can view the README.Rmd file in this repo to see the extra web scraping code used to gather character names.
 
-### Plotting character rating prevalence
+## Plotting character rating prevalence
 
 I'm interested in seeing if certain characters being the main focus of an episode drives the IMDb rating up or down. Unfortunately a large assumption needs to be made: characters being the main focus of an episode are listed in the episode description on IMDb. Of course I'm sure this assumption is not perfect, there are certainly episode descriptions that don't mention characters with prominent story lines in the episode.
 
@@ -317,27 +319,62 @@ for (i in full_credits$first_name) {
     rename(!!enquo(i) := `str_detect(ep_desc, i)`)
 }
 
+library(rvest)
+# Scrape cast page
+cast <- 
+  read_html("https://www.imdb.com/title/tt0496424/fullcredits/?ref_=tt_cl_sm") %>% 
+  html_element("#fullcredits_content > table.cast_list") %>% 
+  html_table
+
+# Clean up cast data
+cast <- 
+  cast %>% 
+  filter(X2 != "") %>% 
+  select(X2, X4) %>% 
+  rename(actor = X2, character = X4) %>% 
+  separate(character, c("character", "ep_count"), "\\n") %>% 
+  select(-ep_count) %>% 
+  mutate(first_name = str_remove_all(character, " .*"))
+
+
 characters %>% 
   pivot_longer(Liz:Lester, 
                names_to = "character", 
                values_to = "in_episode_desc") %>% 
   filter(in_episode_desc == TRUE) %>% 
-  group_by(character) %>% 
+  mutate(first_name = str_remove_all(character, "[[:space:]].*")) %>% 
+  left_join(cast %>% distinct(first_name, .keep_all = TRUE), 
+            "first_name") %>% 
+  
+  group_by(character.x) %>% 
   mutate(n = n()) %>% 
   slice_max(n, n = 20) %>% 
   summarise(n = mean(n),
             p25 = quantile(rating, .25),
             p50 = quantile(rating, .50),
             p75 = quantile(rating, .75)) %>% 
-  mutate(character = fct_reorder(character, n)) %>% 
-  mutate(character = fct_reorder(character, p50)) %>%
+  mutate(color = if_else(character.x %in% 
+                           c("Jack", "Liz", "Tracy", "Jenna", "Kenneth"),
+                         "black", "grey60")) %>% 
+  left_join(cast %>% distinct(first_name, .keep_all = TRUE), 
+            c("character.x" = "first_name")) %>% 
+  mutate(actor = case_when(character.x == "Dr. Spaceman" ~ "Chris Parnell",
+                           character.x == "Dr. Baird" ~ "Jon Hamm",
+                           character.x == "Lutz" ~ "John Lutz",
+                           character.x == "Dot Com" ~ "Kevin Brown",
+                           TRUE ~ actor)) %>% 
+  mutate(character.x = fct_reorder(character.x, n)) %>% 
+  mutate(character.x = fct_reorder(character.x, p50)) %>%
   
-  ggplot(aes(y = character)) +
-  geom_point(aes(x = p50, size = n)) +
-  geom_errorbar(aes(xmin = p25, xmax = p75)) +
-  gghighlight::gghighlight(character %in% c("Jack", "Liz", "Tracy", "Jenna", "Kenneth"), 
-                           use_direct_label = FALSE,
-                           unhighlighted_params = aes(color = "grey50")) +
+  ggplot(aes(y = character.x)) +
+  geom_point(aes(x = p50, size = n, color = color)) +
+  geom_errorbar(aes(xmin = p25, xmax = p75, color = color)) +
+  
+  geom_text(aes(x = 8.46, label = actor),
+            size = 3.7,
+            hjust = 0,
+            family = "Monsterrat") +
+  theme(plot.margin = margin(10, 120, 10, 10)) +
   
   annotate("text", 7.47, 3.5, hjust = 1, 
            label = "25th") +
@@ -349,12 +386,27 @@ characters %>%
            label = "75th Percentile") +
   geom_curve(aes(x = 8, y = 3, xend = 7.905, yend = "Hazel"), arrow = arrow(length = unit(0.01, "npc")), curvature = -.2) +
   
-  guides(size = "none") +
-  coord_cartesian(xlim = c(7.4, 8.4)) +
+  scale_color_identity() +
+  guides(size = "none", color = "none") +
+  coord_cartesian(xlim = c(7.4, 8.4),
+                  clip = "off") +
   labs(x = "Episode Ratings",
        y = "Characters",
        title = "The five main characters do not seem to have different distributions of\nepisode ratings",
        caption = "\nData from IMDb.com  |  @PhilliPhresh")
 ```
 
-I'm not surprised Dr. Spaceman is stably near the top of the list.
+I'm not surprised Dr. Spaceman is stably near the top of the list. Of the main characters there doesn't seem to be a difference in the distribution of episode ratings. However, I do notice annecdotally that a lot of episodes with characters often associated with Jack (romantic partners or business associates) outpace characters associated with Liz (mostly romantic partners).
+
+| Characters associated with Jack | Characters associated with Liz |
+|---------------------------------|--------------------------------|
+| Hank                            | Dr. Baird                      |
+| Elisa                           | Floyd                          |
+| Nancy                           | Criss                          |
+| Avery                           | Dennis                         |
+| Devon                           |                                |
+| Don                             |                                |
+
+# Conclusion
+
+This analysis has opened my eyes to the dichotomy of ratings between seasons and the potential factors driving those. I've gained a new appreciation for episodes written by Tina Fey and ones including characters focusing on Jack. If you're a fellow fan of 30 Rock, feel free to reach out---I'd love to chat!
